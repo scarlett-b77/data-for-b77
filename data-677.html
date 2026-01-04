@@ -19,7 +19,6 @@
             background-color: #f0f4fa;
         }
         
-        /* Header */
         header {
             background: linear-gradient(to right, #1e1b4b, #312e81, #5b21b6);
             color: white;
@@ -148,7 +147,6 @@
             display: none;
         }
         
-        /* Filter Container */
         #filterContainer {
             display: flex;
             flex-direction: column;
@@ -279,7 +277,6 @@
             color: white;
         }
         
-        /* Main */
         main {
             max-width: 1600px;
             margin: 0 auto;
@@ -344,7 +341,6 @@
             border-color: #fecaca;
         }
         
-        /* Welcome Screen */
         .welcome-screen {
             padding: 10rem 2rem;
             text-align: center;
@@ -430,7 +426,6 @@
             background: #374151;
         }
         
-        /* Table */
         table {
             width: 100%;
             border-collapse: separate;
@@ -529,7 +524,6 @@
             color: #6366f1;
         }
         
-        /* Category Badge */
         .category-badge {
             display: inline-block;
             padding: 6px 12px;
@@ -545,7 +539,6 @@
             text-align: center;
         }
         
-        /* No Results */
         .no-results {
             display: none;
             padding: 10rem 2rem;
@@ -575,7 +568,6 @@
             margin-top: 0.5rem;
         }
         
-        /* Debug Panel */
         .debug-panel {
             position: fixed;
             bottom: 20px;
@@ -635,7 +627,6 @@
             background: #fffbeb;
         }
         
-        /* Notifications */
         .notification {
             position: fixed;
             top: 20px;
@@ -669,7 +660,6 @@
             }
         }
         
-        /* Spinner */
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -686,7 +676,6 @@
             }
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .button-group {
                 width: 100%;
@@ -838,8 +827,7 @@
         const debugLogs = [];
         let autoRefreshInterval = null;
         
-        // ✅ 改用正確編碼的 CSV（data-677.csv）
-        const GITHUB_CSV_URL = 'https://raw.githubusercontent.com/scarlett-b77/data-for-b77/3d793a014d7a5c7c687b0df266e3657e62d04d11/data-677.csv';
+        const GITHUB_CSV_URL = 'https://raw.githubusercontent.com/scarlett-b77/data-for-b77/main/data-677.csv';
 
         const categoryColors = [
             { bg: '#dbeafe', text: '#1e40af' }, { bg: '#dcfce7', text: '#166534' },
@@ -905,9 +893,19 @@
             if (!text) return '';
             const str = String(text);
             if (str.match(/^[？\?]{3,}$/)) {
-                return '(?) '; // 保留標記但不整個刪除
+                return '(?) '; 
             }
             return str;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return text;
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         async function loadFromGitHub() {
@@ -919,32 +917,27 @@
 
             try {
                 const response = await fetch(GITHUB_CSV_URL, {
-                    cache: 'no-store',
-                    headers: { 'Accept-Charset': 'utf-8' }
+                    cache: 'no-store', 
                 });
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
 
-                let csvText = await response.text();
-                addDebugLog(`📦 原始大小：${csvText.length} 字元`, 'info');
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
                 
-                if (csvText.charCodeAt(0) === 0xFEFF) {
-                    csvText = csvText.substring(1);
-                    addDebugLog('✅ 已移除 UTF-8 BOM', 'success');
-                }
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                const csvText = XLSX.utils.sheet_to_csv(worksheet);
+                
+                addDebugLog(`📦 下載並解析成功`, 'success');
                 
                 if (!csvText || csvText.length < 50) {
                     throw new Error('CSV 資料為空');
                 }
 
-                // ⚠️ 改為警告而非中止
-                if (csvText.match(/[？\?]{10,}/)) {
-                    addDebugLog('⚠️ 偵測到亂碼，但仍繼續載入...', 'warning');
-                }
-
-                addDebugLog(`✅ 成功下載 CSV`, 'success');
                 processCSVData(csvText);
                 showNotification('✅ GitHub 資料載入成功！', 'success');
             } catch (error) {
@@ -1101,17 +1094,8 @@
             reader.onload = function(event) {
                 const workbook = XLSX.read(new Uint8Array(event.target.result), { type: 'array' });
                 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                 
-                const csvText = rows.map(row => 
-                    row.map(cell => {
-                        const str = String(cell || '');
-                        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                            return '"' + str.replace(/"/g, '""') + '"';
-                        }
-                        return str;
-                    }).join(',')
-                ).join('\n');
+                const csvText = XLSX.utils.sheet_to_csv(worksheet);
                 
                 processCSVData(csvText);
                 addDebugLog(`✅ 檔案處理完成！`, 'success');
@@ -1146,9 +1130,15 @@
         function populateFilter(id, field) {
             const items = [...new Set(productsData.map(p => p[field]))].filter(item => item && item !== 'Other').sort();
             const el = document.getElementById(id);
-            el.innerHTML = `<option value="">All ${id.includes('brand') ? 'Brands' : 'Categories'}</option>`;
-            items.forEach(it => { el.innerHTML += `<option value="${it}">${it}</option>`; });
-            if (productsData.some(p => p[field] === 'Other')) { el.innerHTML += `<option value="Other">Other</option>`; }
+            
+            const options = [`<option value="">All ${id.includes('brand') ? 'Brands' : 'Categories'}</option>`];
+            items.forEach(it => { options.push(`<option value="${it}">${escapeHtml(it)}</option>`); });
+            
+            if (productsData.some(p => p[field] === 'Other')) { 
+                options.push(`<option value="Other">Other</option>`); 
+            }
+            
+            el.innerHTML = options.join('');
         }
 
         function renderTable() {
@@ -1182,15 +1172,15 @@
             document.getElementById('tableBody').innerHTML = filtered.map(item => {
                 const cat = getCategoryColor(item.category);
                 return `<tr>
-                    <td><span style="font-family: 'JetBrains Mono'; font-size: 13px; font-weight: 700; color: #475569; word-break: break-all; width: 95px; display: inline-block;">${item.number}</span></td>
-                    <td><span class="category-badge" style="background: ${cat.bg}; color: ${cat.text};">${item.category}</span></td>
-                    <td style="font-weight: 900; color: #1e293b; text-align: center;">${item.brand}</td>
-                    <td style="font-weight: 900; color: #1e293b;">${item.model}</td>
-                    <td style="font-weight: 900; color: #475569;">${item.name}</td>
+                    <td><span style="font-family: 'JetBrains Mono'; font-size: 13px; font-weight: 700; color: #475569; word-break: break-all; width: 95px; display: inline-block;">${escapeHtml(item.number)}</span></td>
+                    <td style="text-align: center;"><span class="category-badge" style="background: ${cat.bg}; color: ${cat.text};">${escapeHtml(item.category)}</span></td>
+                    <td style="font-weight: 900; color: #1e293b; text-align: center;">${escapeHtml(item.brand)}</td>
+                    <td style="font-weight: 900; color: #1e293b;">${escapeHtml(item.model)}</td>
+                    <td style="font-weight: 900; color: #475569;">${escapeHtml(item.name)}</td>
                     <td><div class="price-badge price-min">$${fmt(item.price, item.price_display)}</div></td>
                     <td><div class="price-badge price-retail">$${fmt(item.retail_price, item.retail_display)}</div></td>
                     <td><div class="price-badge price-cost">$${fmt(item.price_6, item.price_6_display)}</div></td>
-                    <td>${item.url ? `<a href="${item.url}" target="_blank" style="display: inline-flex; width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; font-size: 18px;" onmouseover="this.style.background='#6366f1'; this.style.color='white';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#94a3b8';"><i class="fa-solid fa-link"></i></a>` : '<span style="color: #cbd5e1;">-</span>'}</td>
+                    <td>${item.url ? `<a href="${item.url}" target="_blank" style="display: inline-flex; width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; font-size: 18px;" onmouseover="this.style.background='#6366f1'; this.style.color='white';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#94a3b8';"><i class="fa-regular fa-file-pdf"></i></a>` : '<span style="color: #cbd5e1;">-</span>'}</td>
                 </tr>`;
             }).join('');
             
