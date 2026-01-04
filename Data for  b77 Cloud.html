@@ -1,619 +1,409 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-[#f0f4fa]">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DATA FOR 677 | scarlett-b77 System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data 677 Viewer Center</title>
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-        table { border-collapse: separate; border-spacing: 0 12px; }
-        .sticky-th { 
-            position: sticky; top: 0; z-index: 50; 
-            background: rgba(240, 244, 250, 0.98); backdrop-filter: blur(12px);
-            font-size: 0.85rem; font-weight: 800; letter-spacing: 0.02em; color: #475569; 
-            text-transform: uppercase; padding: 18px 8px; text-align: center;
-            border-bottom: 2px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .table-row-card {
-            background: white; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 12px -2px rgba(0,0,0,0.03);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 16px;
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-        .table-row-card:hover {
-            transform: translateY(-2px) scale-[1.002];
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.01), 0 4px 20px -2px rgba(99, 102, 241, 0.25);
-            z-index: 10; position: relative;
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
         }
-        .table-row-card td { padding: 16px 8px; vertical-align: middle; border-top: 1px solid #f8fafc; border-bottom: 1px solid #f8fafc; }
-        .table-row-card td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; border-left: 1px solid #f8fafc; padding-left: 16px; }
-        .table-row-card td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; border-right: 1px solid #f8fafc; }
-        .price-badge {
-            display: inline-flex; align-items: center; justify-content: center;
-            padding: 6px 4px; border-radius: 12px; font-family: 'JetBrains Mono', monospace;
-            width: 100%; letter-spacing: -0.5px;
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
         }
-        #filterContainer { transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); max-height: 600px; overflow: hidden; opacity: 1; transform: translateY(0); }
-        #filterContainer.collapsed { max-height: 0; opacity: 0; margin: 0; padding: 0; pointer-events: none; transform: translateY(-20px); }
-        .premium-input {
-            background-color: #172033; border: 1px solid #312e81; color: #e2e8f0;
-            border-radius: 12px; padding: 12px 16px; outline: none; width: 100%;
-            transition: all 0.3s ease; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
         }
-        .premium-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), inset 0 2px 4px 0 rgba(0, 0, 0, 0.2); }
-        .loading-spinner {
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .controls button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .controls button:hover {
+            background: #764ba2;
+        }
+        
+        .controls input {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+        
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #667eea;
+            color: #333;
+            white-space: nowrap;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            word-break: break-word;
+        }
+        
+        /* NO 欄位特殊設定 */
+        th:first-child, td:first-child {
+            width: 95px;
+            text-align: center;
+        }
+        
+        td:first-child {
+            word-break: break-all;
+        }
+        
+        /* Category 欄位置中 */
+        th:nth-child(3), td:nth-child(3) {
+            text-align: center;
+        }
+        
+        tbody tr:hover {
+            background: #f0f4ff;
+        }
+        
+        tbody tr:nth-child(even) {
+            background: #fafbfc;
+        }
+        
+        .status {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(99, 102, 241, 0.2);
-            border-top-color: #6366f1;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        
+        .status.active {
+            background: #d4edda;
+            color: #155724;
         }
-        .notification { position: fixed; top: 20px; right: 20px; padding: 16px 24px; border-radius: 12px; font-weight: bold; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease; }
-        .notification.success { background: #dcfce7; color: #166534; }
-        .notification.error { background: #fee2e2; color: #991b1b; }
-        .debug-panel { position: fixed; bottom: 20px; right: 20px; width: 400px; max-height: 400px; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); overflow-y: auto; z-index: 9998; padding: 20px; display: none; }
-        .debug-panel.show { display: block; }
-        .debug-panel h3 { margin: 0 0 10px 0; font-size: 14px; font-weight: bold; color: #1e293b; }
-        .debug-log { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #475569; margin: 5px 0; padding: 5px; background: #f1f5f9; border-radius: 6px; border-left: 3px solid #6366f1; }
-        .debug-log.error { border-left-color: #ef4444; color: #991b1b; }
-        .debug-log.success { border-left-color: #22c55e; color: #166534; }
-        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @media (max-width: 1023px) { .view-desktop { display: none; } .view-mobile { display: block; } .debug-panel { width: 90vw; max-width: 400px; } }
-        @media (min-width: 1024px) { .view-desktop { display: table; } .view-mobile { display: none; } }
+        
+        .status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .footer {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .stats {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 30px;
+        }
     </style>
 </head>
-<body class="text-slate-700">
-
-    <header class="bg-gradient-to-r from-indigo-950 via-indigo-900 to-violet-900 text-white shadow-lg relative z-40">
-        <div class="max-w-[1600px] mx-auto px-6 py-5">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-4 cursor-pointer group" onclick="location.reload()">
-                    <div class="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner border border-white/20 group-hover:bg-white/20 transition-all overflow-hidden p-1.5">
-                        <i class="fa-brands fa-github text-2xl text-white"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-indigo-200">DATA FOR 677</h1>
-                        <p class="text-xs text-indigo-300/80 font-bold tracking-widest uppercase">scarlett-b77 | GitHub System</p>
-                    </div>
-                </div>
-                
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleDebug()" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-800/50 backdrop-blur-md border border-indigo-700/50 rounded-xl text-xs font-bold text-indigo-100 hover:bg-indigo-700/50 transition-all">
-                        <i class="fa-solid fa-sliders"></i> Debug
-                    </button>
-                    <button onclick="toggleFilters()" class="flex items-center gap-2 px-5 py-2.5 bg-indigo-800/50 backdrop-blur-md border border-indigo-700/50 rounded-xl text-sm font-bold text-indigo-100 hover:bg-indigo-700/50 transition-all">
-                        <i id="toggleIcon" class="fa-solid fa-sliders"></i> Filters
-                    </button>
-                    <button id="loadCloudBtn" onclick="loadFromGitHub()" class="flex items-center px-6 py-2.5 bg-emerald-600 rounded-xl text-sm font-extrabold cursor-pointer hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 active:scale-95 text-white">
-                        <i id="cloudIcon" class="fa-solid fa-arrow-down-to-line mr-2"></i> Load Data
-                    </button>
-                    <label class="flex items-center px-6 py-2.5 bg-slate-600 rounded-xl text-sm font-extrabold cursor-pointer hover:bg-slate-700 transition-all shadow-lg active:scale-95 text-white">
-                        <i class="fa-solid fa-file-arrow-up mr-2"></i> Upload
-                        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden">
-                    </label>
-                </div>
-            </div>
-
-            <div id="filterContainer" class="flex flex-col gap-5">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-end">
-                    <div class="lg:col-span-5 relative group z-10">
-                        <label class="block text-indigo-300 text-xs font-bold uppercase mb-2 ml-1">Global Search</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-indigo-400 text-lg"></i>
-                            <input type="text" id="globalSearch" oninput="renderTable()" class="premium-input pl-14 text-lg placeholder-indigo-400/50" placeholder="Type to locate items...">
-                        </div>
-                    </div>
-                    <div class="lg:col-span-4 flex gap-3">
-                        <div class="flex-1">
-                            <label class="block text-indigo-300 text-xs font-bold uppercase mb-2 ml-1">Category</label>
-                            <select id="filter-category" onchange="renderTable()" class="premium-input cursor-pointer"></select>
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-indigo-300 text-xs font-bold uppercase mb-2 ml-1">Brand</label>
-                            <select id="filter-brand" onchange="renderTable()" class="premium-input cursor-pointer"></select>
-                        </div>
-                    </div>
-                    <div class="lg:col-span-3 bg-indigo-800/30 p-1.5 rounded-2xl border border-indigo-700/50 flex items-center">
-                        <select id="sort-field" onchange="renderTable()" class="premium-input !border-0 !bg-transparent !shadow-none focus:!ring-0 flex-1 font-bold text-sm">
-                            <option value="brand">Sort: Brand</option>
-                            <option value="model">Sort: Model</option>
-                            <option value="price">Sort: Min Price</option>
-                            <option value="retail_price">Sort: Retail Price</option>
-                            <option value="price_6" selected>Sort: Price 6</option>
-                        </select>
-                        <button id="sort-dir-btn" onclick="toggleSortDir()" class="w-12 h-12 flex items-center justify-center bg-indigo-600/50 hover:bg-indigo-500/50 rounded-xl transition-all text-indigo-200 hover:text-white active:scale-90">
-                            <i id="sort-dir-icon" class="fa-solid fa-arrow-down-short-wide text-lg"></i>
-                        </button>
-                        <input type="hidden" id="sort-dir" value="asc">
-                    </div>
-                </div>
-            </div>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Data 677 檢視中心</h1>
+            <p>專業數據管理與分析平台</p>
         </div>
-    </header>
-
-    <main class="max-w-[1600px] mx-auto p-4 lg:p-8">
-        <div id="statusHeader" class="hidden flex justify-between items-end mb-8 px-2">
-            <div>
-                <h2 class="text-2xl font-black text-slate-800 tracking-tight">Analytical Results</h2>
-                <span class="text-sm font-bold text-slate-500 uppercase tracking-wide">Found <span id="resultCount" class="text-indigo-600 font-extrabold text-xl mx-1">0</span> matching entries</span>
-            </div>
-            <button onclick="location.reload()" class="group flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-xs font-extrabold text-slate-500 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all uppercase tracking-wider shadow-sm">
-                <i class="fa-solid fa-rotate group-hover:rotate-180 transition-transform duration-500"></i> Reset
-            </button>
-        </div>
-
-        <div id="welcomeScreen" class="py-40 text-center">
-            <div class="relative inline-block">
-                <div class="absolute inset-0 bg-indigo-100 rounded-full blur-3xl opacity-50 animate-pulse"></div>
-                <div class="relative p-16 bg-white/80 backdrop-blur-xl rounded-[40px] shadow-lg border border-white/50">
-                    <i class="fa-brands fa-github text-7xl text-indigo-600 mb-8"></i>
-                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-widest mb-3">Ready to Load</h2>
-                    <p class="text-slate-500 font-medium mb-8">Connected to scarlett-b77 GitHub repository</p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button onclick="loadFromGitHub()" class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl text-sm font-extrabold text-white cursor-pointer hover:from-indigo-500 hover:to-violet-500 transition-all shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-1">
-                            <i class="fa-solid fa-arrow-down-to-line mr-3"></i> Load GitHub Data
-                        </button>
-                        <label class="inline-flex items-center px-8 py-3 bg-slate-600 rounded-xl text-sm font-extrabold text-white cursor-pointer hover:bg-slate-700 transition-all shadow-lg active:scale-95">
-                            <i class="fa-solid fa-upload mr-3"></i> Import File
-                            <input type="file" id="fileInputAlt" accept=".xlsx, .xls, .csv" class="hidden">
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <table id="dataTable" class="hidden view-desktop w-full table-fixed">
-            <thead>
-                <tr>
-                    <th class="sticky-th w-[120px] text-center rounded-tl-2xl rounded-bl-2xl">No.</th>
-                    <th class="sticky-th w-[10%] text-center">Category</th>
-                    <th class="sticky-th w-[12%] text-center">Brand</th>
-                    <th class="sticky-th w-[16%] text-center">Model</th>
-                    <th class="sticky-th w-[20%] text-center">ITEM</th>
-                    <th class="sticky-th w-[10%] text-center text-emerald-600/80">Min. Price</th>
-                    <th class="sticky-th w-[10%] text-center text-rose-500/80">Retail Price</th>
-                    <th class="sticky-th w-[10%] text-center text-indigo-600/80">PRICE 6</th>
-                    <th class="sticky-th w-[5%] text-center rounded-tr-2xl rounded-br-2xl">Ref</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody" class="text-slate-600 space-y-4"></tbody>
-        </table>
-
-        <div id="mobileBody" class="view-mobile space-y-6"></div>
         
-        <div id="noResults" class="hidden py-40 text-center">
-            <i class="fa-solid fa-magnifying-glass-chart text-6xl text-indigo-100 mb-6"></i>
-            <h3 class="text-xl font-black text-slate-400 uppercase tracking-widest">No Data Found</h3>
-            <p class="text-slate-400 mt-2">Adjust your filters or search criteria</p>
+        <div class="controls">
+            <button onclick="loadData()">🔄 重新載入</button>
+            <button onclick="exportToCSV()">📥 匯出 CSV</button>
+            <input type="text" id="searchInput" placeholder="搜尋資料..." onkeyup="filterTable()">
         </div>
-    </main>
-
-    <div id="debugPanel" class="debug-panel">
-        <h3>📊 Debug Information</h3>
-        <div id="debugLog"></div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">總行數</div>
+                <div class="stat-value" id="rowCount">-</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">總欄數</div>
+                <div class="stat-value" id="colCount">-</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">載入狀態</div>
+                <div class="stat-value" id="status" style="color: #666;">準備中</div>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <div id="loading" class="loading">⏳ 正在載入資料...</div>
+            <table id="dataTable" style="display:none;">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+            <div id="error" class="error" style="display:none;"></div>
+        </div>
+        
+        <div class="footer">
+            <p>Data 677 Viewer | 最後更新: <span id="lastUpdate">-</span> | © 2026</p>
+        </div>
     </div>
 
     <script>
-        let productsData = [];
-        let fuse; 
-        let sortAscending = true;
-        const debugLogs = [];
+        // GitHub 或本地資料來源
+        const DATA_URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/data-677.json';
         
-        // ✅ 預設 GitHub CSV 連結（scarlett-b77）
-        const GITHUB_CSV_URL = 'https://raw.githubusercontent.com/scarlett-b77/data-for-b77/refs/heads/main/9999999002.csv';
-
-        const categoryColors = [
-            'bg-blue-100 text-blue-800', 'bg-emerald-100 text-emerald-800',
-            'bg-purple-100 text-purple-800', 'bg-amber-100 text-amber-800',
-            'bg-rose-100 text-rose-800', 'bg-cyan-100 text-cyan-800',
-            'bg-teal-100 text-teal-800', 'bg-indigo-100 text-indigo-800',
-            'bg-fuchsia-100 text-fuchsia-800', 'bg-lime-100 text-lime-800',
-            'bg-sky-100 text-sky-800', 'bg-orange-100 text-orange-800',
-            'bg-violet-100 text-violet-800', 'bg-pink-100 text-pink-800'
-        ];
-
-        function addDebugLog(msg, type = 'info') {
-            const log = `[${new Date().toLocaleTimeString()}] ${msg}`;
-            debugLogs.push({msg: log, type});
-            console.log(log);
-            updateDebugPanel();
-        }
-
-        function updateDebugPanel() {
-            const panel = document.getElementById('debugLog');
-            panel.innerHTML = debugLogs.map(log => 
-                `<div class="debug-log ${log.type}">${log.msg}</div>`
-            ).join('');
-            panel.scrollTop = panel.scrollHeight;
-        }
-
-        function toggleDebug() {
-            document.getElementById('debugPanel').classList.toggle('show');
-        }
-
-        function getCategoryColor(category) {
-            if (!category) return 'bg-slate-100 text-slate-600';
-            let hash = 0;
-            for (let i = 0; i < category.length; i++) {
-                hash = category.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            const index = Math.abs(hash) % categoryColors.length;
-            return categoryColors[index];
-        }
-
-        function formatModelText(text) {
-            if (!text) return '';
-            return String(text).replace(/(.{14})/g, '$1<br>');
-        }
-
-        function toggleFilters() {
-            const container = document.getElementById('filterContainer');
-            const icon = document.getElementById('toggleIcon');
-            container.classList.toggle('collapsed');
-            icon.classList.toggle('fa-sliders');
-            icon.classList.toggle('fa-xmark');
-        }
-
-        function toggleSortDir() {
-            sortAscending = !sortAscending;
-            document.getElementById('sort-dir').value = sortAscending ? 'asc' : 'desc';
-            const icon = document.getElementById('sort-dir-icon');
-            icon.className = sortAscending ? 'fa-solid fa-arrow-down-short-wide text-lg' : 'fa-solid fa-arrow-up-wide-short text-lg';
-            renderTable();
-        }
-
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 4000);
-        }
-
-        // ✅ GitHub 載入函數
-        async function loadFromGitHub() {
-            const btn = document.getElementById('loadCloudBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<div class="loading-spinner mr-2"></div> Loading...';
-            addDebugLog('🚀 從 GitHub 載入資料...', 'info');
-            addDebugLog(`📡 URL: ${GITHUB_CSV_URL}`, 'info');
-
+        // 或使用本地數據（如果在同一資料夾）
+        const USE_LOCAL = false;
+        
+        let allData = [];
+        let filteredData = [];
+        
+        async function loadData() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const dataTable = document.getElementById('dataTable');
+            const status = document.getElementById('status');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            dataTable.style.display = 'none';
+            status.textContent = '載入中...';
+            
             try {
-                const response = await fetch(GITHUB_CSV_URL);
+                let data;
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                if (USE_LOCAL) {
+                    // 使用本地 JSON 檔案
+                    const response = await fetch('./data-677.json');
+                    if (!response.ok) throw new Error('無法載入本地檔案');
+                    data = await response.json();
+                } else {
+                    // 使用示例數據（替換為您的實際資料）
+                    data = generateSampleData();
                 }
-
-                const csvText = await response.text();
                 
-                if (!csvText || csvText.length < 50) {
-                    throw new Error('CSV 資料為空或格式錯誤');
-                }
-
-                addDebugLog(`✅ 成功下載 ${csvText.length} 字元的 CSV`, 'success');
-                processCSVData(csvText);
-                showNotification('✅ GitHub 資料載入成功！', 'success');
-            } catch (error) {
-                addDebugLog(`❌ GitHub 載入失敗：${error.message}`, 'error');
-                showNotification(`❌ 載入失敗：${error.message}`, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-arrow-down-to-line mr-2"></i> Load Data';
+                allData = data;
+                filteredData = data;
+                
+                renderTable(data);
+                updateStats(data);
+                
+                loading.style.display = 'none';
+                dataTable.style.display = 'table';
+                status.textContent = '已載入 ✓';
+                status.style.color = '#28a745';
+                
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('zh-TW');
+                
+            } catch (err) {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.textContent = '❌ 載入失敗: ' + err.message;
+                status.textContent = '失敗';
+                status.style.color = '#dc3545';
+                console.error('資料載入錯誤:', err);
             }
         }
-
-        function processCSVData(csvText) {
-            addDebugLog(`📊 CSV 長度：${csvText.length} 字元`, 'info');
+        
+        function generateSampleData() {
+            // 生成示例數據 - 請替換為您的實際資料
+            const categories = ['A', 'B', 'C', 'D', 'E'];
+            const data = [];
             
-            const lines = csvText.split('\n').filter(line => line.trim());
-            addDebugLog(`📈 總行數：${lines.length}`, 'info');
+            for (let i = 1; i <= 100; i++) {
+                data.push({
+                    'NO': String(i).padStart(3, '0'),
+                    'Name': `Item ${i}`,
+                    'Category': categories[Math.floor(Math.random() * categories.length)],
+                    'Value': Math.floor(Math.random() * 10000),
+                    'Status': Math.random() > 0.5 ? 'Active' : 'Inactive',
+                    'Date': new Date(2026, 0, Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0]
+                });
+            }
             
-            const rows = lines.map(line => parseCSVLine(line));
-            
-            if (rows.length === 0) {
-                addDebugLog('❌ CSV 為空！', 'error');
-                showNotification('❌ CSV 為空或無效。', 'error');
+            return data;
+        }
+        
+        function renderTable(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = '❌ 無資料';
                 return;
             }
-
-            const keywords = ['no', 'number', 'category', 'brand', 'model', 'item', 'desc', 'price', 'retail', 'link'];
-            let bestHeaderRowIndex = -1;
-            let maxScore = 0;
             
-            for (let i = 0; i < Math.min(rows.length, 25); i++) {
-                const row = rows[i];
-                if (!row || row.length === 0) continue;
-                let score = 0;
-                row.forEach(cell => {
-                    const cellStr = String(cell).toLowerCase().trim();
-                    if (keywords.some(k => cellStr.includes(k))) {
-                        score++;
-                        if (keywords.includes(cellStr)) score += 2;
+            const headers = Object.keys(data[0]);
+            const thead = document.getElementById('tableHead');
+            const tbody = document.getElementById('tableBody');
+            
+            // 渲染表頭
+            thead.innerHTML = '<tr>' + 
+                headers.map(h => `<th>${h}</th>`).join('') + 
+                '</tr>';
+            
+            // 渲染表身
+            tbody.innerHTML = data.map(row => 
+                '<tr>' + 
+                headers.map(h => {
+                    const value = row[h];
+                    if (h === 'Status') {
+                        const className = value === 'Active' ? 'active' : 'inactive';
+                        return `<td><span class="status ${className}">${value}</span></td>`;
                     }
+                    return `<td>${value}</td>`;
+                }).join('') + 
+                '</tr>'
+            ).join('');
+        }
+        
+        function updateStats(data) {
+            if (!data || data.length === 0) return;
+            
+            const headers = Object.keys(data[0]);
+            document.getElementById('rowCount').textContent = data.length;
+            document.getElementById('colCount').textContent = headers.length;
+        }
+        
+        function filterTable() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredData = allData.filter(row => {
+                return Object.values(row).some(val => 
+                    String(val).toLowerCase().includes(searchInput)
+                );
+            });
+            
+            renderTable(filteredData);
+        }
+        
+        function exportToCSV() {
+            if (!filteredData || filteredData.length === 0) {
+                alert('❌ 沒有資料可匯出');
+                return;
+            }
+            
+            const headers = Object.keys(filteredData[0]);
+            let csv = headers.join(',') + '\n';
+            
+            filteredData.forEach(row => {
+                const values = headers.map(h => {
+                    const val = String(row[h] || '').replace(/,/g, '\\,');
+                    return `"${val}"`;
                 });
-                if (score > maxScore) {
-                    maxScore = score;
-                    bestHeaderRowIndex = i;
-                }
-            }
-
-            if (bestHeaderRowIndex === -1) {
-                addDebugLog('⚠️ 未偵測到表頭，使用第一行', 'error');
-                bestHeaderRowIndex = 0;
-            } else {
-                addDebugLog(`✅ 表頭在第 ${bestHeaderRowIndex} 行`, 'success');
-            }
-
-            const headerRow = rows[bestHeaderRowIndex].map(h => String(h).toLowerCase().trim());
-            const findCol = (keys, antiKeys = []) => {
-                return headerRow.findIndex(h => {
-                    const match = keys.some(k => h.includes(k));
-                    const antiMatch = antiKeys.some(k => h.includes(k));
-                    return match && !antiMatch;
-                });
-            };
-
-            const colMap = {
-                no: findCol(['no', 'number', '#']),
-                category: findCol(['category', 'cat', 'type']),
-                brand: findCol(['brand']),
-                model: findCol(['model']),
-                name: findCol(['desc', 'item', 'name']),
-                price: findCol(['price', 'min'], ['retail']),
-                retail: findCol(['retail']),
-                cost: findCol(['cost', 'price 6']),
-                link: findCol(['ref', 'link', 'url'])
-            };
-
-            addDebugLog(`🔍 表頭偵測結果：品牌=${colMap.brand}, 型號=${colMap.model}, 價格=${colMap.price}`, 'info');
-
-            const dataRows = rows.slice(bestHeaderRowIndex + 1);
-            const mappedData = dataRows.map((row) => {
-                let url = null;
-                if (colMap.link !== -1 && row[colMap.link]) {
-                    const val = String(row[colMap.link]).trim();
-                    if (val.toLowerCase().startsWith('http') || val.toLowerCase().startsWith('www')) {
-                        url = val;
-                    }
-                }
-
-                const getPrice = (col) => {
-                    if (col === -1) return { display: '0', numeric: 0 };
-                    const val = row[col];
-                    if (!val) return { display: '0', numeric: 0 };
-                    const strVal = String(val).trim();
-                    const numVal = parseFloat(strVal);
-                    if (!isNaN(numVal) && numVal !== 0) return { display: strVal, numeric: numVal };
-                    else if (isNaN(numVal) && strVal !== '') return { display: strVal, numeric: 0 };
-                    return { display: '0', numeric: 0 };
-                };
-
-                const priceObj = getPrice(colMap.price);
-                const retailObj = getPrice(colMap.retail);
-                const costObj = getPrice(colMap.cost);
-                const brandText = colMap.brand > -1 && row[colMap.brand] ? String(row[colMap.brand]).trim() : '';
-                const catText = colMap.category > -1 && row[colMap.category] ? String(row[colMap.category]).trim() : 'Other';
-
-                return {
-                    number: colMap.no > -1 ? String(row[colMap.no] || '').trim() : '',
-                    category: catText,
-                    brand: brandText,
-                    model: colMap.model > -1 ? String(row[colMap.model] || '').trim() : '',
-                    name: colMap.name > -1 ? String(row[colMap.name] || '').trim() : '',
-                    price: priceObj.numeric,
-                    price_display: priceObj.display,
-                    retail_price: retailObj.numeric,
-                    retail_display: retailObj.display,
-                    price_6: costObj.numeric,
-                    price_6_display: costObj.display,
-                    url: url,
-                    isValid: (priceObj.numeric !== 0 || retailObj.numeric !== 0 || costObj.numeric !== 0 || brandText !== '') && brandText.toLowerCase() !== 'brand'
-                };
+                csv += values.join(',') + '\n';
             });
-
-            productsData = mappedData.filter(item => item.isValid);
-            addDebugLog(`✅ 載入 ${productsData.length} 個有效產品`, 'success');
-            initFuse();
-            initApp();
-        }
-
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let insideQuotes = false;
             
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') {
-                    insideQuotes = !insideQuotes;
-                } else if (char === ',' && !insideQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            result.push(current.trim());
-            return result;
-        }
-
-        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
-        document.getElementById('fileInputAlt').addEventListener('change', handleFileUpload);
-
-        function handleFileUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            addDebugLog(`📁 處理檔案：${file.name}`, 'info');
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const workbook = XLSX.read(new Uint8Array(event.target.result), { type: 'array' });
-                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                
-                const csvText = rows.map(row => 
-                    row.map(cell => {
-                        const str = String(cell || '');
-                        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                            return '"' + str.replace(/"/g, '""') + '"';
-                        }
-                        return str;
-                    }).join(',')
-                ).join('\n');
-                
-                processCSVData(csvText);
-                addDebugLog(`✅ 檔案處理完成！`, 'success');
-                showNotification('✅ 檔案上傳成功！', 'success');
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function initFuse() {
-            const options = {
-                keys: [
-                    { name: 'brand', weight: 0.3 },
-                    { name: 'model', weight: 0.3 },
-                    { name: 'name', weight: 0.2 },
-                    { name: 'number', weight: 0.1 },
-                    { name: 'category', weight: 0.1 }
-                ],
-                threshold: 0.3,
-                ignoreLocation: true 
-            };
-            fuse = new Fuse(productsData, options);
-        }
-
-        function initApp() {
-            populateFilter('filter-category', 'category');
-            populateFilter('filter-brand', 'brand');
-            document.getElementById('welcomeScreen').classList.add('hidden');
-            document.getElementById('dataTable').classList.remove('hidden');
-            document.getElementById('statusHeader').classList.replace('hidden', 'flex');
-            renderTable();
-        }
-
-        function populateFilter(id, field) {
-            const items = [...new Set(productsData.map(p => p[field]))].filter(item => item && item !== 'Other').sort();
-            const el = document.getElementById(id);
-            el.innerHTML = `<option value="">All ${id.includes('brand') ? 'Brands' : 'Categories'}</option>`;
-            items.forEach(it => { el.innerHTML += `<option value="${it}">${it}</option>`; });
-            if (productsData.some(p => p[field] === 'Other')) { el.innerHTML += `<option value="Other">Other</option>`; }
-        }
-
-        function renderTable() {
-            const fCat = document.getElementById('filter-category').value;
-            const fBrand = document.getElementById('filter-brand').value;
-            const searchInput = document.getElementById('globalSearch').value.trim();
-            const sField = document.getElementById('sort-field').value;
-            const sAsc = document.getElementById('sort-dir').value === 'asc';
-
-            let filtered;
-            if (searchInput) {
-                const results = fuse.search(searchInput);
-                filtered = results.map(result => result.item);
-            } else {
-                filtered = [...productsData];
-            }
-
-            filtered = filtered.filter(p => {
-                const matchCat = !fCat || p.category === fCat;
-                const matchBrand = !fBrand || p.brand === fBrand;
-                return matchCat && matchBrand;
-            });
-
-            filtered.sort((a, b) => {
-                let va = a[sField], vb = b[sField];
-                if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
-                if (va < vb) return sAsc ? -1 : 1;
-                if (va > vb) return sAsc ? 1 : -1;
-                return 0;
-            });
-
-            const fmt = (n, display) => {
-                if (display && display !== '0' && isNaN(parseFloat(display))) return display;
-                return n ? Math.floor(n).toLocaleString() : '0';
-            };
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
             
-            document.getElementById('resultCount').textContent = filtered.length;
+            link.setAttribute('href', url);
+            link.setAttribute('download', `data-677-${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
             
-            document.getElementById('tableBody').innerHTML = filtered.map(item => `
-                <tr class="table-row-card group">
-                    <td class="col-no text-left pl-5">
-                        <span class="font-mono text-slate-500 text-sm font-bold leading-tight w-full block break-all whitespace-normal overflow-hidden line-clamp-2 group-hover:text-indigo-500 transition-colors" title="${item.number}">${item.number}</span>
-                    </td>
-                    <td class="text-center align-top pt-4">
-                        <span class="inline-block w-[110px] py-1.5 rounded-lg font-extrabold text-[12px] uppercase tracking-wider whitespace-nowrap overflow-hidden text-ellipsis transition-colors ${getCategoryColor(item.category)}">${item.category}</span>
-                    </td>
-                    <td class="text-center whitespace-normal align-top pt-4">
-                        <span class="font-black text-slate-700 text-[17px] leading-tight block group-hover:text-indigo-900 transition-colors">${item.brand}</span>
-                    </td>
-                    <td class="text-left whitespace-normal align-top pt-4 pl-4">
-                        <span class="font-black text-slate-800 text-[17px] leading-tight block group-hover:text-indigo-600 transition-colors">${formatModelText(item.model)}</span>
-                    </td>
-                    <td class="text-left whitespace-normal align-top pt-4">
-                        <span class="font-black text-slate-700 text-[17px] leading-tight block group-hover:text-slate-900 transition-colors">${item.name}</span>
-                    </td>
-                    <td class="text-center align-middle">
-                        <span class="price-badge bg-emerald-50/50 text-emerald-600 font-black text-xl group-hover:bg-emerald-100 transition-colors">$${fmt(item.price, item.price_display)}</span>
-                    </td>
-                    <td class="text-center align-middle">
-                        <span class="price-badge bg-rose-50/50 text-rose-600 font-black text-xl group-hover:bg-rose-100 transition-colors">$${fmt(item.retail_price, item.retail_display)}</span>
-                    </td>
-                    <td class="text-center align-middle">
-                         <span class="price-badge bg-indigo-50/50 text-indigo-700 font-black text-xl group-hover:bg-indigo-100 group-hover:text-indigo-800 group-hover:shadow-sm transition-all">$${fmt(item.price_6, item.price_6_display)}</span>
-                    </td>
-                    <td class="text-center align-middle">
-                        ${item.url ? `<a href="${item.url}" target="_blank" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 text-slate-400 hover:bg-indigo-600 hover:text-white text-xl transition-all hover:scale-110 hover:shadow-md cursor-pointer"><i class="fa-solid fa-link"></i></a>` : '<span class="text-slate-300">-</span>'}
-                    </td>
-                </tr>`).join('');
-
-            document.getElementById('mobileBody').innerHTML = filtered.map(item => `
-                <div class="product-card p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="px-3 py-1.5 rounded-xl font-black text-[11px] uppercase tracking-wider ${getCategoryColor(item.category)}">${item.category}</span>
-                        <span class="font-mono text-slate-400 text-xs font-bold line-clamp-1">${item.number}</span>
-                    </div>
-                    <div class="text-xs font-extrabold text-indigo-400 uppercase mb-1 tracking-wide">${item.brand}</div>
-                    <div class="text-2xl font-black text-slate-800 leading-tight mb-3 break-all">${item.model}</div>
-                    <div class="text-sm font-black text-slate-700 mb-8 leading-relaxed">${item.name}</div>
-                    <div class="bg-slate-50/80 rounded-3xl p-6">
-                        <div class="grid grid-cols-3 gap-4 text-center">
-                            <div class="flex flex-col items-center">
-                                <p class="text-[10px] text-emerald-600/70 font-black uppercase mb-2 tracking-wider">Min</p>
-                                <span class="price-badge bg-white shadow-sm text-emerald-600 font-black text-xl w-full">$${fmt(item.price, item.price_display)}</span>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <p class="text-[10px] text-rose-500/70 font-black uppercase mb-2 tracking-wider">Retail</p>
-                                <span class="price-badge bg-white shadow-sm text-rose-600 font-black text-xl w-full">$${fmt(item.retail_price, item.retail_display)}</span>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <p class="text-[10px] text-indigo-600/70 font-black uppercase mb-2 tracking-wider">Cost</p>
-                                <span class="price-badge bg-indigo-600 text-white font-black text-xl w-full">$${fmt(item.price_6, item.price_6_display)}</span>
-                            </div>
-                        </div>
-                    </div>
-                    ${item.url ? `<a href="${item.url}" target="_blank" class="mt-6 w-full bg-gradient-to-r from-slate-800 to-indigo-900 text-white py-4 rounded-2xl flex items-center justify-center gap-3 text-sm font-extrabold uppercase tracking-widest"><i class="fa-regular fa-file-pdf text-lg"></i> Ref</a>` : ''}
-                </div>`).join('');
-            
-            const noResults = document.getElementById('noResults');
-            if (filtered.length === 0 && productsData.length > 0) noResults.classList.remove('hidden');
-            else noResults.classList.add('hidden');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
-
-        // 頁面載入時自動載入
-        window.addEventListener('DOMContentLoaded', function() {
-            addDebugLog('✅ 頁面已加載，準備載入 GitHub 資料', 'success');
-            setTimeout(() => loadFromGitHub(), 500);
-        });
+        
+        // 頁面載入時自動載入數據
+        window.addEventListener('load', loadData);
     </script>
 </body>
 </html>
